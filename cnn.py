@@ -11,21 +11,26 @@ train_labels = mnist.train_labels()[:1000]
 test_images = mnist.test_images()[:1000]
 test_labels = mnist.test_labels()[:1000]
 
-conv = Conv3x3(8)                  # 28x28x1 -> 26x26x8
-pool = MaxPool2()                  # 26x26x8 -> 13x13x8
-softmax = Softmax(13 * 13 * 8, 10) # 13x13x8 -> 10
+conv1 = Conv3x3(num_filters=8, input_depth=1)   # 28x28x1 -> 26x26x8
+pool1 = MaxPool2()                              # 26x26x8 -> 13x13x8
+conv2 = Conv3x3(num_filters=16, input_depth=8)  # 13x13x8 -> 11x11x16
+pool2 = MaxPool2()                              # 11x11x16 -> 5x5x16
+softmax = Softmax(5 * 5 * 16, 10)               # 5x5x16 -> 10
 
 def forward(image, label):
   '''
   Completes a forward pass of the CNN and calculates the accuracy and
   cross-entropy loss.
-  - image is a 2d numpy array
+  - image is a 3d numpy array
   - label is a digit
   '''
   # We transform the image from [0, 255] to [-0.5, 0.5] to make it easier
   # to work with. This is standard practice.
-  out = conv.forward((image / 255) - 0.5)
-  out = pool.forward(out)
+  image = image[:, :, np.newaxis]
+  out = conv1.forward((image / 255) - 0.5)
+  out = pool1.forward(out)
+  out = conv2.forward(out)
+  out = pool2.forward(out)
   out = softmax.forward(out)
 
   # Calculate cross-entropy loss and accuracy. np.log() is the natural log.
@@ -38,7 +43,7 @@ def train(im, label, lr=.005):
   '''
   Completes a full training step on the given image and label.
   Returns the cross-entropy loss and accuracy.
-  - image is a 2d numpy array
+  - image is a 3d numpy array
   - label is a digit
   - lr is the learning rate
   '''
@@ -51,8 +56,10 @@ def train(im, label, lr=.005):
 
   # Backprop
   gradient = softmax.backprop(gradient, lr)
-  gradient = pool.backprop(gradient)
-  gradient = conv.backprop(gradient, lr)
+  gradient = pool2.backprop(gradient)
+  gradient = conv2.backprop(gradient, lr)
+  gradient = pool1.backprop(gradient)
+  gradient = conv1.backprop(gradient, lr)
 
   return loss, acc
 

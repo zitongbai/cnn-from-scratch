@@ -1,3 +1,12 @@
+# About this fork
+
+This fork is a fork of [vzhou842/cnn-from-scratch](https://github.com/vzhou842/cnn-from-scratch) with the following changes:
+* implemented multi-channel input for Conv3x3 
+* refined the computation of backward propagation in Conv3x3
+* provided a simple example of building two layers of Conv3x3
+
+The original README.md is as follows.
+
 # A Convolution Neural Network (CNN) From Scratch
 This was written for my 2-part blog post series on CNNs:
 
